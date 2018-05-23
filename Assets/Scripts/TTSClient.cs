@@ -320,21 +320,11 @@ namespace CognitiveServicesTTS
         }
 
         /// <summary>
-        /// Called when a TTS request has been completed and audio is available.
-        /// </summary>
-        public event EventHandler<GenericEventArgs<Stream>> OnAudioAvailable;
-
-        /// <summary>
-        /// Called when an error has occured. e.g this could be an HTTP error.
-        /// </summary>
-        public event EventHandler<GenericEventArgs<Exception>> OnError;
-
-        /// <summary>
         /// Sends the specified text to be spoken to the TTS service and saves the response audio to a file.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A Task</returns>
-        public Task Speak(CancellationToken cancellationToken, InputOptions inputOptions)
+        public async Task<Stream> Speak(CancellationToken cancellationToken, InputOptions inputOptions)
         {
             client.DefaultRequestHeaders.Clear();
             foreach (var header in inputOptions.Headers)
@@ -360,63 +350,12 @@ namespace CognitiveServicesTTS
                 Content = new StringContent(GenerateSsml(inputOptions.Locale, genderValue, inputOptions.VoiceName, inputOptions.Text))
             };
 
-            var httpTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            Console.WriteLine("Response status code: [{0}]", httpTask.Result.StatusCode);
+            var httpMsg = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            Console.WriteLine("Response status code: [{0}]", httpMsg.StatusCode);
 
-            var saveTask = httpTask.ContinueWith(
-                async (responseMessage, token) =>
-                {
-                    try
-                    {
-                        if (responseMessage.IsCompleted && responseMessage.Result != null && responseMessage.Result.IsSuccessStatusCode)
-                        {
-                            var httpStream = await responseMessage.Result.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                            this.AudioAvailable(new GenericEventArgs<Stream>(httpStream));
-                        }
-                        else
-                        {
-                            this.Error(new GenericEventArgs<Exception>(new Exception(String.Format("Service returned {0}", responseMessage.Result.StatusCode))));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        this.Error(new GenericEventArgs<Exception>(e.GetBaseException()));
-                    }
-                    finally
-                    {
-                        responseMessage.Dispose();
-                        request.Dispose();
-                    }
-                },
-                TaskContinuationOptions.AttachedToParent,
-                cancellationToken);
+            Stream httpStream = await httpMsg.Content.ReadAsStreamAsync();
 
-            return saveTask;
-        }
-
-        /// <summary>
-        /// Called when a TTS requst has been successfully completed and audio is available.
-        /// </summary>
-        private void AudioAvailable(GenericEventArgs<Stream> e)
-        {
-            EventHandler<GenericEventArgs<Stream>> handler = this.OnAudioAvailable;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
-
-        /// <summary>
-        /// Error handler function
-        /// </summary>
-        /// <param name="e">The exception</param>
-        private void Error(GenericEventArgs<Exception> e)
-        {
-            EventHandler<GenericEventArgs<Exception>> handler = this.OnError;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
+            return httpStream;
         }
 
         /// <summary>
