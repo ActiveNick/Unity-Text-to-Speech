@@ -44,6 +44,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using UnityEngine;
 
 namespace CognitiveServicesTTS
 {
@@ -351,7 +352,7 @@ namespace CognitiveServicesTTS
             };
 
             var httpMsg = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            Console.WriteLine("Response status code: [{0}]", httpMsg.StatusCode);
+            Debug.Log($"Response status code: [{httpMsg.StatusCode}]");
 
             Stream httpStream = await httpMsg.Content.ReadAsStreamAsync();
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using CognitiveServicesTTS;
 using System.IO;
-using System.Media;
 using System.Threading;
 using System.Net;
 using System.Threading.Tasks;
@@ -91,7 +90,7 @@ public class SpeechManager : MonoBehaviour {
     //private void PlayAudio(object sender, GenericEventArgs<Stream> args)
     private void PlayAudio(Stream audioStream)
     {
-        Console.WriteLine("Playing audio stream");
+        Debug.Log("Playing audio stream");
 
         // Play the audio using Unity AudioSource, allowing us to benefit from effects,
         // spatialization, mixing, etc.
@@ -162,7 +161,7 @@ public class SpeechManager : MonoBehaviour {
     {
         try
         {
-            Console.WriteLine("Starting TTSSample request code execution.");
+            Debug.Log("Starting TTSSample request code execution.");
             // Synthesis endpoint for old Bing Speech API: https://speech.platform.bing.com/synthesize
             // For new unified SpeechService API: https://westus.tts.speech.microsoft.com/cognitiveservices/v1
             // Note: new unified SpeechService API synthesis endpoint is per region
