@@ -351,7 +351,7 @@ namespace CognitiveServicesTTS
                 Content = new StringContent(GenerateSsml(inputOptions.Locale, genderValue, inputOptions.VoiceName, inputOptions.Text))
             };
 
-            var httpMsg = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var httpMsg = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
             Debug.Log($"Response status code: [{httpMsg.StatusCode}]");
 
             Stream httpStream = await httpMsg.Content.ReadAsStreamAsync();

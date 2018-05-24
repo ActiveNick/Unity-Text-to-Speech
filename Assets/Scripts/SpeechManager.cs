@@ -103,22 +103,27 @@ public class SpeechManager : MonoBehaviour {
         {
             try
             {
+                Debug.Log($"Creating new byte array of size {size}");
                 // Create buffer
-                byte[] buffer = new byte[(int)size];
+                byte[] buffer = new byte[size];
 
+                Debug.Log($"Reading stream to the end and putting in bytes array.");
                 buffer = ReadToEnd(audioStream);
 
                 // Convert raw WAV data into Unity audio data
+                Debug.Log($"Converting raw WAV data of size {buffer.Length} into Unity audio data.");
                 int sampleCount = 0;
                 int frequency = 0;
                 var unityData = ToUnityAudio(buffer, out sampleCount, out frequency);
 
-                // Convert to an audio clip
+                // Convert data to a Unity audio clip
+                Debug.Log($"Converting audio data of size {unityData.Length} to Unity audio clip with {sampleCount} samples at frequency {frequency}.");
                 var clip = ToClip("Speech", unityData, sampleCount, frequency);
 
                 // Set the source on the audio clip
                 audioSource.clip = clip;
 
+                Debug.Log($"Trigger playback of audio clip on AudioSource.");
                 // Play audio
                 audioSource.Play();
             }
@@ -145,7 +150,8 @@ public class SpeechManager : MonoBehaviour {
         }
 
         // Get audio stream result send it to play TTS audio
-        Stream resultStream = speakTask.Result;
+        MemoryStream resultStream = new MemoryStream();
+        speakTask.Result.CopyTo(resultStream);
         if (resultStream != null)
         {
             PlayAudio(resultStream);
@@ -161,7 +167,7 @@ public class SpeechManager : MonoBehaviour {
     {
         try
         {
-            Debug.Log("Starting TTSSample request code execution.");
+            Debug.Log("Starting Cognitive Services Speech API synthesize request code execution.");
             // Synthesis endpoint for old Bing Speech API: https://speech.platform.bing.com/synthesize
             // For new unified SpeechService API: https://westus.tts.speech.microsoft.com/cognitiveservices/v1
             // Note: new unified SpeechService API synthesis endpoint is per region
@@ -311,9 +317,11 @@ public class SpeechManager : MonoBehaviour {
     {
         // Determine if mono or stereo
         int channelCount = wavAudio[22];  // Speech audio data is always mono but read actual header value for processing
+        Debug.Log($"Audio data has {channelCount} channel(s).");
 
         // Get the frequency
         frequency = BytesToInt(wavAudio, 24);
+        Debug.Log($"Audio data frequency is {frequency}.");
 
         // Get past all the other sub chunks to get to the data subchunk:
         int pos = 12; // First subchunk ID from 12 to 16
@@ -330,21 +338,29 @@ public class SpeechManager : MonoBehaviour {
         // Pos is now positioned to start of actual sound data.
         sampleCount = (wavAudio.Length - pos) / 2;  // 2 bytes per sample (16 bit sound mono)
         if (channelCount == 2) { sampleCount /= 2; }  // 4 bytes per sample (16 bit stereo)
+        Debug.Log($"Audio data contains {sampleCount} samples. Starting conversion");
 
         // Allocate memory (supporting left channel only)
         var unityData = new float[sampleCount];
 
-        // Write to double array/s:
-        int i = 0;
-        while (pos < wavAudio.Length)
+        try
         {
-            unityData[i] = BytesToFloat(wavAudio[pos], wavAudio[pos + 1]);
-            pos += 2;
-            if (channelCount == 2)
+            // Write to double array/s:
+            int i = 0;
+            while (pos < wavAudio.Length)
             {
+                unityData[i] = BytesToFloat(wavAudio[pos], wavAudio[pos + 1]);
                 pos += 2;
+                if (channelCount == 2)
+                {
+                    pos += 2;
+                }
+                i++;
             }
-            i++;
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Error occurred converting audio data to float array of size {wavAudio.Length} at position {pos}.");
         }
 
         return unityData;
