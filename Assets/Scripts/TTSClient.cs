@@ -275,6 +275,13 @@ namespace CognitiveServicesTTS
         Audio24Khz160KBitRateMonoMp3
     }
 
+    /// <summary>
+    /// List of all voices currently implemented in this sample. This may not include all the
+    /// voices supported by the Cognitive Services Text-to-Speech API. Please visit the following
+    /// link to get the most up-to-date list of supported languages:
+    /// https://docs.microsoft.com/en-us/azure/cognitive-services/speech/api-reference-rest/bingvoiceoutput
+    /// Don't forget to edit ConvertVoiceNametoString() below if you add more values to this enum.
+    /// </summary>
     public enum VoiceName
     {
         enAUCatherine,
@@ -291,6 +298,16 @@ namespace CognitiveServicesTTS
         enUSZiraRUS,
         enUSJessaRUS,
         enUSBenjaminRUS,
+        deATMichael,
+        deCHKarsten,
+        deDEHedda,
+        deDEHeddaRUS,
+        deDEStefanApollo,
+        esESLauraApollo,
+        esESHelenaRUS,
+        esESPabloApollo,
+        esMXHildaRUS,
+        esMXRaulApollo,
         frCACaroline,
         frCAHarmonieRUS,
         frCHGuillaume,
@@ -384,6 +401,13 @@ namespace CognitiveServicesTTS
             return httpStream;
         }
 
+        /// <summary>
+        /// Converts a specific VoioceName enum option into its string counterpart as expected
+        /// by the API when building the SSML string that is sent to Cognitive Services.
+        /// Make sure that each option in the enum is included in the switch below.
+        /// </summary>
+        /// <param name="voicename"></param>
+        /// <returns></returns>
         public string ConvertVoiceNametoString(VoiceName voicename)
         {
             switch (voicename)
@@ -416,6 +440,26 @@ namespace CognitiveServicesTTS
                     return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
                 case VoiceName.enUSBenjaminRUS:
                     return "Microsoft Server Speech Text to Speech Voice (en-US, BenjaminRUS)";
+                case VoiceName.deATMichael:
+                    return "Microsoft Server Speech Text to Speech Voice (de-AT, Michael)";
+                case VoiceName.deCHKarsten:
+                    return "Microsoft Server Speech Text to Speech Voice (de-CH, Karsten)";
+                case VoiceName.deDEHedda:
+                    return "Microsoft Server Speech Text to Speech Voice (de-DE, Hedda)";
+                case VoiceName.deDEHeddaRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (de-DE, HeddaRUS)";
+                case VoiceName.deDEStefanApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (de-DE, Stefan, Apollo)";
+                case VoiceName.esESHelenaRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (es-ES, HelenaRUS)";
+                case VoiceName.esESLauraApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (es-ES, Laura, Apollo)";
+                case VoiceName.esESPabloApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (es-ES, Pablo, Apollo)";
+                case VoiceName.esMXHildaRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (es-MX, HildaRUS)";
+                case VoiceName.esMXRaulApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (es-MX, Raul, Apollo)";
                 case VoiceName.frCACaroline:
                     return "Microsoft Server Speech Text to Speech Voice (fr-CA, Caroline)";
                 case VoiceName.frCAHarmonieRUS:
