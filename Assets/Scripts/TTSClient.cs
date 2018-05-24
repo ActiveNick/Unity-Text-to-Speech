@@ -290,7 +290,12 @@ namespace CognitiveServicesTTS
         enINRaviApollo,
         enUSZiraRUS,
         enUSJessaRUS,
-        enUSBenjaminRUS
+        enUSBenjaminRUS,
+        frCACaroline,
+        frCAHarmonieRUS,
+        frCHGuillaume,
+        frFRJulieApollo,
+        frFRHortenseRUS
     }
 
     /// <summary>
@@ -411,6 +416,16 @@ namespace CognitiveServicesTTS
                     return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
                 case VoiceName.enUSBenjaminRUS:
                     return "Microsoft Server Speech Text to Speech Voice (en-US, BenjaminRUS)";
+                case VoiceName.frCACaroline:
+                    return "Microsoft Server Speech Text to Speech Voice (fr-CA, Caroline)";
+                case VoiceName.frCAHarmonieRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (fr-CA, HarmonieRUS)";
+                case VoiceName.frCHGuillaume:
+                    return "Microsoft Server Speech Text to Speech Voice (fr-CH, Guillaume)";
+                case VoiceName.frFRJulieApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (fr-FR, Julie, Apollo)";
+                case VoiceName.frFRHortenseRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (fr-FR, HortenseRUS)";
                 default:
                     return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
             }
