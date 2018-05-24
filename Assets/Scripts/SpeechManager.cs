@@ -77,7 +77,8 @@ public class SpeechManager : MonoBehaviour {
             return;
         }
 
-        Speak("This is a sample message synthesized by Microsoft Cognitive Services using high quality voices. Feel free to make it say something more interesting.");
+        // For testing only, don't trigger playback on startup in normal circumstances
+        //Speak("This is a sample message synthesized by Microsoft Cognitive Services using high quality voices. Feel free to make it say something more interesting.");
     }
 
     /// <summary>
