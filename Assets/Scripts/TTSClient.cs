@@ -275,6 +275,24 @@ namespace CognitiveServicesTTS
         Audio24Khz160KBitRateMonoMp3
     }
 
+    public enum VoiceName
+    {
+        enAUCatherine,
+        enAUHayleyRUS,
+        enCALinda,
+        enCAHeatherRUS,
+        enGBSusanApollo,
+        enGBHazelRUS,
+        enGBGeorgeApollo,
+        enIESean,
+        enINHeeraApollo,
+        enINPriyaRUS,
+        enINRaviApollo,
+        enUSZiraRUS,
+        enUSJessaRUS,
+        enUSBenjaminRUS
+    }
+
     /// <summary>
     /// Sample synthesize request
     /// </summary>
@@ -287,16 +305,18 @@ namespace CognitiveServicesTTS
         /// <param name="gender">The gender.</param>
         /// <param name="name">The voice name.</param>
         /// <param name="text">The text input.</param>
-        private string GenerateSsml(string locale, string gender, string name, string text)
+        private string GenerateSsml(string locale, string gender, VoiceName voicename, string text)
         {
+            string voice = ConvertVoiceNametoString(voicename);
+
             var ssmlDoc = new XDocument(
                               new XElement("speak",
                                   new XAttribute("version", "1.0"),
-                                  new XAttribute(XNamespace.Xml + "lang", "en-US"),
+                                  new XAttribute(XNamespace.Xml + "lang", locale), // was locked to "en-US"
                                   new XElement("voice",
                                       new XAttribute(XNamespace.Xml + "lang", locale),
                                       new XAttribute(XNamespace.Xml + "gender", gender),
-                                      new XAttribute("name", name),
+                                      new XAttribute("name", voice),
                                       text)));
             return ssmlDoc.ToString();
         }
@@ -359,6 +379,48 @@ namespace CognitiveServicesTTS
             return httpStream;
         }
 
+        public string ConvertVoiceNametoString(VoiceName voicename)
+        {
+            switch (voicename)
+            {
+                case VoiceName.enAUCatherine:
+                    return "Microsoft Server Speech Text to Speech Voice (en-AU, Catherine)";
+                case VoiceName.enAUHayleyRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-AU, HayleyRUS)";
+                case VoiceName.enCALinda:
+                    return "Microsoft Server Speech Text to Speech Voice (en-CA, Linda)";
+                case VoiceName.enCAHeatherRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-CA, HeatherRUS)";
+                case VoiceName.enGBSusanApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (en-GB, Susan, Apollo)";
+                case VoiceName.enGBHazelRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-GB, HazelRUS)";
+                case VoiceName.enGBGeorgeApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (en-GB, George, Apollo)";
+                case VoiceName.enIESean:
+                    return "Microsoft Server Speech Text to Speech Voice (en-IE, Sean)";
+                case VoiceName.enINHeeraApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (en-IN, Heera, Apollo)";
+                case VoiceName.enINPriyaRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-IN, PriyaRUS)";
+                case VoiceName.enINRaviApollo:
+                    return "Microsoft Server Speech Text to Speech Voice (en-IN, Ravi, Apollo)";
+                case VoiceName.enUSZiraRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)";
+                case VoiceName.enUSJessaRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
+                case VoiceName.enUSBenjaminRUS:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, BenjaminRUS)";
+                default:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
+            }
+        }
+
+        public string GetVoiceLocale(VoiceName voicename)
+        {
+            return ConvertVoiceNametoString(voicename).Substring(46, 5);
+        }
+
         /// <summary>
         /// Inputs Options for the TTS Service.
         /// </summary>
@@ -370,9 +432,9 @@ namespace CognitiveServicesTTS
             public InputOptions()
             {
                 this.Locale = "en-us";
-                this.VoiceName = "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)";
-                // Default to Riff16Khz16BitMonoPcm output format.
-                this.OutputFormat = AudioOutputFormat.Riff16Khz16BitMonoPcm;
+                this.VoiceName = VoiceName.enUSJessaRUS;
+                // Default to Riff24Khz16BitMonoPcm output format.
+                this.OutputFormat = AudioOutputFormat.Riff24Khz16BitMonoPcm;
             }
 
             /// <summary>
@@ -474,7 +536,7 @@ namespace CognitiveServicesTTS
                     // Refer to the doc
                     toReturn.Add(new KeyValuePair<string, string>("X-Search-ClientID", "1ECFAE91408841A480F00935DC390960"));
                     // The software originating the request
-                    toReturn.Add(new KeyValuePair<string, string>("User-Agent", "TTSClient"));
+                    toReturn.Add(new KeyValuePair<string, string>("User-Agent", "UnityTTSClient"));
 
                     return toReturn;
                 }
@@ -497,7 +559,7 @@ namespace CognitiveServicesTTS
             /// <summary>
             /// Gets or sets the name of the voice.
             /// </summary>
-            public string VoiceName { get; set; }
+            public VoiceName VoiceName { get; set; }
 
             /// <summary>
             /// Authorization Token.

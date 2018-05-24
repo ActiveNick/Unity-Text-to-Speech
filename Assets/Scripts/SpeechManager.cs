@@ -18,6 +18,8 @@ public class SpeechManager : MonoBehaviour {
     [Tooltip("The audio source where speech will be played.")]
     public AudioSource audioSource = null;
 
+    public VoiceName voiceName = VoiceName.enUSJessaRUS;
+
     // Access token used to make calls against the Cognitive Services Speech API
     string accessToken;
 
@@ -182,10 +184,10 @@ public class SpeechManager : MonoBehaviour {
                 Text = message,
                 VoiceType = Gender.Female,
                 // Refer to the documentation for complete list of supported locales.
-                Locale = "en-US",
+                Locale = cortana.GetVoiceLocale(voiceName),
                 // You can also customize the output voice. Refer to the documentation to view the different
                 // voices that the TTS service can output.
-                VoiceName = "Microsoft Server Speech Text to Speech Voice (en-US, Jessa24KRUS)",
+                VoiceName = voiceName,
 
                 // Service can return audio in different output format.
                 OutputFormat = AudioOutputFormat.Riff24Khz16BitMonoPcm,
