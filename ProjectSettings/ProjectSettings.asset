@@ -561,11 +561,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: Unity-Text-to-Speech
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: 
+  metroCertificatePath: D:\Dev\Git\Unity-Text-to-Speech\Assets\WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: 
-  metroCertificateIssuer: 
-  metroCertificateNotAfter: 0000000000000000
+  metroCertificateSubject: Microsoft
+  metroCertificateIssuer: Microsoft
+  metroCertificateNotAfter: 00451d48c612d501
   metroApplicationDescription: Unity-Text-to-Speech
   wsaImages: {}
   metroTileShortName: 

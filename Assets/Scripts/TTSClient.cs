@@ -58,21 +58,37 @@ namespace CognitiveServicesTTS
         private string accessToken;
         private Timer accessTokenRenewer;
 
+        private HttpClient client;
+
         //Access token expires every 10 minutes. Renew it every 9 minutes only.
         private const int RefreshTokenDuration = 9;
 
-        public Authentication(string issueTokenUri, string apiKey)
+        public Authentication()
         {
+            client = new HttpClient();
+        }
+
+        /// <summary>
+        /// The Authenticate method needs to be called separately since it runs asynchronously
+        /// and cannot be in the constructor, nor should it block the main Unity thread.
+        /// </summary>
+        /// <param name="issueTokenUri"></param>
+        /// <param name="apiKey"></param>
+        /// <returns></returns>
+        public async Task<string> Authenticate(string issueTokenUri, string apiKey)
+        { 
             this.AccessUri = issueTokenUri;
             this.apiKey = apiKey;
 
-            this.accessToken = HttpPost(issueTokenUri, this.apiKey);
+            this.accessToken = await HttpClientPost(issueTokenUri, this.apiKey);
 
-            // renew the token every specfied minutes
+            // Renew the token every specfied minutes
             accessTokenRenewer = new Timer(new TimerCallback(OnTokenExpiredCallback),
                                            this,
                                            TimeSpan.FromMinutes(RefreshTokenDuration),
                                            TimeSpan.FromMilliseconds(-1));
+
+            return accessToken;
         }
 
         public string GetAccessToken()
@@ -80,13 +96,13 @@ namespace CognitiveServicesTTS
             return this.accessToken;
         }
 
-        private void RenewAccessToken()
+        private async void RenewAccessToken()
         {
-            string newAccessToken = HttpPost(AccessUri, this.apiKey);
+            string newAccessToken = await HttpClientPost(AccessUri, this.apiKey);
             //swap the new token with old one
             //Note: the swap is thread unsafe
             this.accessToken = newAccessToken;
-            Console.WriteLine(string.Format("Renewed token for user: {0} is: {1}",
+            Debug.Log(string.Format("Renewed token for user: {0} is: {1}",
                               this.apiKey,
                               this.accessToken));
         }
@@ -99,7 +115,7 @@ namespace CognitiveServicesTTS
             }
             catch (Exception ex)
             {
-                Console.WriteLine(string.Format("Failed renewing access token. Details: {0}", ex.Message));
+                Debug.Log(string.Format("Failed renewing access token. Details: {0}", ex.Message));
             }
             finally
             {
@@ -109,40 +125,27 @@ namespace CognitiveServicesTTS
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("Failed to reschedule the timer to renew access token. Details: {0}", ex.Message));
+                    Debug.Log(string.Format("Failed to reschedule the timer to renew access token. Details: {0}", ex.Message));
                 }
             }
         }
 
-        private string HttpPost(string accessUri, string apiKey)
+        /// <summary>
+        /// Asynchronously calls the authentication service via HTTP POST to obtain 
+        /// </summary>
+        /// <param name="accessUri"></param>
+        /// <param name="apiKey"></param>
+        /// <returns></returns>
+        private async Task<string> HttpClientPost(string accessUri, string apiKey)
         {
-            // Prepare OAuth request
-            WebRequest webRequest = WebRequest.Create(accessUri);
-            webRequest.Method = "POST";
-            webRequest.ContentLength = 0;
-            webRequest.Headers["Ocp-Apim-Subscription-Key"] = apiKey;
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, accessUri);
+            request.Headers.Add("Ocp-Apim-Subscription-Key", apiKey);
+            request.Content = new StringContent("");
 
-            using (WebResponse webResponse = webRequest.GetResponse())
-            {
-                using (Stream stream = webResponse.GetResponseStream())
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        byte[] waveBytes = null;
-                        int count = 0;
-                        do
-                        {
-                            byte[] buf = new byte[1024];
-                            count = stream.Read(buf, 0, 1024);
-                            ms.Write(buf, 0, count);
-                        } while (stream.CanRead && count > 0);
+            HttpResponseMessage httpMsg = await client.SendAsync(request);
+            Debug.Log($"Authentication Response status code: [{httpMsg.StatusCode}]");
 
-                        waveBytes = ms.ToArray();
-
-                        return Encoding.UTF8.GetString(waveBytes);
-                    }
-                }
-            }
+            return await httpMsg.Content.ReadAsStringAsync();
         }
     }
 

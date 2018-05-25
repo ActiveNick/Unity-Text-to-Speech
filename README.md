@@ -2,7 +2,7 @@
 Sample app used to demonstrate the use of Microsoft Cognitive Services Text-to-Speech APIs from within Unity. These cloud-based APIs provide access to higher quality voices, providing consistency across all client platforms.
 
 - **Unity version:** 2017.4.3f1
-- **Target platforms tested:** Windows Desktop (standalone x64), Android
+- **Target platforms tested:** Windows Desktop (standalone x64), UWP, Android
 
 ## Implementation Notes
 - **THE CODE IN THIS SAMPLE APP ONLY WORKS WITH THE .NET 4.6 SCRIPTING RUNTIME**.

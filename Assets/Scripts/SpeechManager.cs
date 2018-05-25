@@ -60,14 +60,35 @@ public class SpeechManager : MonoBehaviour {
 
         // FOR MORE INFO ON AUTHENTICATION AND HOW TO GET YOUR API KEY, PLEASE VISIT
         // https://docs.microsoft.com/en-us/azure/cognitive-services/speech/how-to/how-to-authentication
-        Authentication auth = new Authentication("https://api.cognitive.microsoft.com/sts/v1.0/issueToken",
+        Authentication auth = new Authentication();
+        Task<string> authenticating = auth.Authenticate("https://api.cognitive.microsoft.com/sts/v1.0/issueToken",
                                                  "4d5a1beefe364f8986d63a877ebd51d5"); // INSERT-YOUR-BING-SPEECH-API-KEY-HERE
         // Don't use the key above, it's mine and I reserve the right to invalidate it if/when I want, 
         // use the link above and go get your own. The free tier gives you 5,000 free API transactions / month.
 
+        // Since the authentication process needs to run asynchronously, we run the code in a coroutine to
+        // avoid blocking the main Unity thread.
+        // Make sure you have successfully obtained a token before making any Text-to-Speech API calls.
+        StartCoroutine(AuthenticateSpeechService(authenticating));
+    }
+
+    /// <summary>
+    /// CoRoutine that checks to see if the async authentication process has completed. Once it completes,
+    /// retrieves the token that will be used for subsequent Cognitive Services Text-to-Speech API calls.
+    /// </summary>
+    /// <param name="authenticating"></param>
+    /// <returns></returns>
+    private IEnumerator AuthenticateSpeechService(Task<string> authenticating)
+    {
+        // Yield control back to the main thread as long as the task is still running
+        while (!authenticating.IsCompleted)
+        {
+            yield return null;
+        }
+
         try
         {
-            accessToken = auth.GetAccessToken();
+            accessToken = authenticating.Result;
             Debug.Log($"Token: {accessToken}\n");
         }
         catch (Exception ex)
@@ -75,11 +96,7 @@ public class SpeechManager : MonoBehaviour {
             Debug.Log("Failed authentication.");
             Debug.Log(ex.ToString());
             Debug.Log(ex.Message);
-            return;
         }
-
-        // For testing only, don't trigger playback on startup in normal circumstances
-        //Speak("This is a sample message synthesized by Microsoft Cognitive Services using high quality voices. Feel free to make it say something more interesting.");
     }
 
     /// <summary>
