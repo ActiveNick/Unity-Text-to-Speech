@@ -1,5 +1,7 @@
 # Unity-Text-to-Speech
-Sample app used to demonstrate the use of Microsoft Cognitive Services Text-to-Speech (TTS) APIs from within the Unity game engine. These cloud-based APIs provide access to higher quality voices, providing consistency across all client platforms. Given that Cognitive Services are cloud APIs, they are therefore not available when offline. It is recommended to fallback on local platform-specific Text-to-Speech APIs when offline.
+Sample app used to demonstrate the use of [Microsoft Cognitive Services Speech Service](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/) [Text-to-Speech (TTS) APIs](https://azure.microsoft.com/en-us/services/cognitive-services/text-to-speech/) from within the Unity game engine. These cloud-based APIs provide access to higher quality voices, providing consistency across all client platforms. Check out the [Text-to-Speech Overview page](https://azure.microsoft.com/en-us/services/cognitive-services/text-to-speech/) to try out & hear a sample of these voices.
+
+This sample makes use of the [Text-to-Speech REST API endpoint](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/rest-apis) and provides a self-contained **SpeechManager** component that is easy to reuse in your own Unity projects. Given that Cognitive Services are cloud APIs, they are therefore not available when offline. It is recommended to fallback on local platform-specific Text-to-Speech APIs when offline.
 
 - **Unity version:** 2017.4.3f1
 - **Target platforms tested:** Windows Desktop (standalone x64), UWP, Android, iOS
