@@ -24,9 +24,15 @@ public class UIManager : MonoBehaviour {
 
     public void SpeechPlayback()
     {
-        string msg = input.text;
-        speech.voiceName = (VoiceName)voicelist.value;
-        speech.Speak(msg);
+        if (speech.isReady)
+        {
+            string msg = input.text;
+            speech.voiceName = (VoiceName)voicelist.value;
+            speech.Speak(msg);
+        } else
+        {
+            Debug.Log("SpeechManager is not ready. Wait until authentication has completed.");
+        }
     }
 
     public void ClearText()

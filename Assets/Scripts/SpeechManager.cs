@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Net;
 using System.Threading.Tasks;
-#if !UNITY_WSA
+#if UNITY_EDITOR || !UNITY_WSA
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -23,7 +23,11 @@ public class SpeechManager : MonoBehaviour {
     // Access token used to make calls against the Cognitive Services Speech API
     string accessToken;
 
-#if !UNITY_WSA
+    // Allows callers to make sure the SpeechManager is authenticated and ready before using it
+    [HideInInspector]
+    public bool isReady = false;
+
+#if UNITY_EDITOR || !UNITY_WSA
     /// <summary>
     /// This class is required to circumvent a TLS bug in Unity, otherwise Unity will throw
     /// an error stating the certificate is invalid. This is supposed to be fixed in Unity
@@ -50,7 +54,7 @@ public class SpeechManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-#if !UNITY_WSA
+#if UNITY_EDITOR || !UNITY_WSA
         // Unity will complain that the following statement is deprecated, however it's still working :)
         ServicePointManager.CertificatePolicy = new CustomCertificatePolicy();
 
@@ -89,6 +93,7 @@ public class SpeechManager : MonoBehaviour {
         try
         {
             accessToken = authenticating.Result;
+            isReady = true;
             Debug.Log($"Token: {accessToken}\n");
         }
         catch (Exception ex)
