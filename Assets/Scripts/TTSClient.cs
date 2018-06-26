@@ -330,19 +330,33 @@ namespace CognitiveServicesTTS
         /// <param name="gender">The gender.</param>
         /// <param name="name">The voice name.</param>
         /// <param name="text">The text input.</param>
-        private string GenerateSsml(string locale, string gender, VoiceName voicename, string text)
+        private string GenerateSsml(string locale, string gender, VoiceName voicename, string text, int pitchdelta)
         {
             string voice = ConvertVoiceNametoString(voicename);
 
+            XNamespace xmlns = "http://www.w3.org/2001/10/synthesis";
             var ssmlDoc = new XDocument(
-                              new XElement("speak",
+                              new XElement(xmlns + "speak",
                                   new XAttribute("version", "1.0"),
                                   new XAttribute(XNamespace.Xml + "lang", locale), // was locked to "en-US"
                                   new XElement("voice",
                                       new XAttribute(XNamespace.Xml + "lang", locale),
                                       new XAttribute(XNamespace.Xml + "gender", gender),
                                       new XAttribute("name", voice),
-                                      text)));
+                                      new XElement("prosody",
+                                            new XAttribute("pitch", pitchdelta.ToString() + "Hz"),
+                                                text))));
+
+            //var ssmlDoc = new XDocument(
+            //      new XElement(xmlns + "speak",
+            //          new XAttribute("version", "1.0"),
+            //          new XAttribute(XNamespace.Xml + "lang", locale), // was locked to "en-US"
+            //          new XElement("voice",
+            //              new XAttribute(XNamespace.Xml + "lang", locale),
+            //              new XAttribute(XNamespace.Xml + "gender", gender),
+            //              new XAttribute("name", voice),
+            //                        text)));
+
             return ssmlDoc.ToString();
         }
 
@@ -393,7 +407,7 @@ namespace CognitiveServicesTTS
 
             var request = new HttpRequestMessage(HttpMethod.Post, inputOptions.RequestUri)
             {
-                Content = new StringContent(GenerateSsml(inputOptions.Locale, genderValue, inputOptions.VoiceName, inputOptions.Text))
+                Content = new StringContent(GenerateSsml(inputOptions.Locale, genderValue, inputOptions.VoiceName, inputOptions.Text, inputOptions.PitchDelta))
             };
 
             var httpMsg = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
@@ -497,6 +511,7 @@ namespace CognitiveServicesTTS
                 this.VoiceName = VoiceName.enUSJessaRUS;
                 // Default to Riff24Khz16BitMonoPcm output format.
                 this.OutputFormat = AudioOutputFormat.Riff24Khz16BitMonoPcm;
+                this.PitchDelta = 0;
             }
 
             /// <summary>
@@ -622,6 +637,11 @@ namespace CognitiveServicesTTS
             /// Gets or sets the name of the voice.
             /// </summary>
             public VoiceName VoiceName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the pitch delta/modifier in Hz (plus/minus)
+            /// </summary>
+            public int PitchDelta { get; set; }
 
             /// <summary>
             /// Authorization Token.

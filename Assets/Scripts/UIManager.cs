@@ -9,10 +9,13 @@ public class UIManager : MonoBehaviour {
 
     public SpeechManager speech;
     public InputField input;
+    public InputField pitch;
     public Dropdown voicelist;
 
     private void Start()
     {
+        pitch.text = "0";
+
         List<string> voices = new List<string>();
         foreach (VoiceName voice in Enum.GetValues(typeof(VoiceName)))
         {
@@ -28,6 +31,7 @@ public class UIManager : MonoBehaviour {
         {
             string msg = input.text;
             speech.voiceName = (VoiceName)voicelist.value;
+            speech.VoicePitch = int.Parse(pitch.text);
             speech.Speak(msg);
         } else
         {

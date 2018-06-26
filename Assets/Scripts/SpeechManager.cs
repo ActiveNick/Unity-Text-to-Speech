@@ -19,6 +19,7 @@ public class SpeechManager : MonoBehaviour {
     public AudioSource audioSource = null;
 
     public VoiceName voiceName = VoiceName.enUSJessaRUS;
+    public int VoicePitch = 0;
 
     // Access token used to make calls against the Cognitive Services Speech API
     string accessToken;
@@ -213,6 +214,7 @@ public class SpeechManager : MonoBehaviour {
 
                 // Service can return audio in different output format.
                 OutputFormat = AudioOutputFormat.Riff24Khz16BitMonoPcm,
+                PitchDelta = VoicePitch,
                 AuthorizationToken = "Bearer " + accessToken,
             });
 
