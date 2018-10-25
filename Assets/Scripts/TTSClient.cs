@@ -347,16 +347,6 @@ namespace CognitiveServicesTTS
                                             new XAttribute("pitch", pitchdelta.ToString() + "Hz"),
                                                 text))));
 
-            //var ssmlDoc = new XDocument(
-            //      new XElement(xmlns + "speak",
-            //          new XAttribute("version", "1.0"),
-            //          new XAttribute(XNamespace.Xml + "lang", locale), // was locked to "en-US"
-            //          new XElement("voice",
-            //              new XAttribute(XNamespace.Xml + "lang", locale),
-            //              new XAttribute(XNamespace.Xml + "gender", gender),
-            //              new XAttribute("name", voice),
-            //                        text)));
-
             return ssmlDoc.ToString();
         }
 

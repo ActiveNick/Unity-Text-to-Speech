@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Unity;
 #if UNITY_EDITOR || !UNITY_WSA
 using System.Security.Cryptography.X509Certificates;
 #endif
@@ -14,6 +15,10 @@ using System.Security.Cryptography.X509Certificates;
 // IMPORTANT: THIS CODE ONLY WORKS WITH THE .NET 4.6 SCRIPTING RUNTIME
 
 public class SpeechManager : MonoBehaviour {
+
+    [Tooltip("Connection string to Azure Storage account.")]
+    [SecretValue("SpeechService_APIKey")]
+    public string SpeechServiceAPIKey = string.Empty;
 
     [Tooltip("The audio source where speech will be played.")]
     public AudioSource audioSource = null;
@@ -47,6 +52,9 @@ public class SpeechManager : MonoBehaviour {
 
     private void Awake()
     {
+        // Attempt to load API secrets
+        SecretHelper.LoadSecrets(this);
+
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -66,8 +74,8 @@ public class SpeechManager : MonoBehaviour {
         // FOR MORE INFO ON AUTHENTICATION AND HOW TO GET YOUR API KEY, PLEASE VISIT
         // https://docs.microsoft.com/en-us/azure/cognitive-services/speech/how-to/how-to-authentication
         Authentication auth = new Authentication();
-        Task<string> authenticating = auth.Authenticate("https://api.cognitive.microsoft.com/sts/v1.0/issueToken",
-                                                 "4d5a1beefe364f8986d63a877ebd51d5"); // INSERT-YOUR-BING-SPEECH-API-KEY-HERE
+        Task<string> authenticating = auth.Authenticate("https://westus.api.cognitive.microsoft.com/sts/v1.0/issueToken",
+                                                 SpeechServiceAPIKey); // INSERT-YOUR-SPEECH-API-KEY-HERE
         // Don't use the key above, it's mine and I reserve the right to invalidate it if/when I want, 
         // use the link above and go get your own. The free tier gives you 5,000 free API transactions / month.
 
