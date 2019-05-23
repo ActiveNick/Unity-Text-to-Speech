@@ -300,12 +300,15 @@ namespace CognitiveServicesTTS
         enINRaviApollo,
         enUSZiraRUS,
         enUSJessaRUS,
+        enUSJessaNeural,
         enUSBenjaminRUS,
+        enUSGuyNeural,
         deATMichael,
         deCHKarsten,
         deDEHedda,
         deDEHeddaRUS,
         deDEStefanApollo,
+        deDEKatjaNeural,
         esESLauraApollo,
         esESHelenaRUS,
         esESPabloApollo,
@@ -445,8 +448,12 @@ namespace CognitiveServicesTTS
                     return "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)";
                 case VoiceName.enUSJessaRUS:
                     return "Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)";
+                case VoiceName.enUSJessaNeural:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, JessaNeural)";
                 case VoiceName.enUSBenjaminRUS:
                     return "Microsoft Server Speech Text to Speech Voice (en-US, BenjaminRUS)";
+                case VoiceName.enUSGuyNeural:
+                    return "Microsoft Server Speech Text to Speech Voice (en-US, GuyNeural)";
                 case VoiceName.deATMichael:
                     return "Microsoft Server Speech Text to Speech Voice (de-AT, Michael)";
                 case VoiceName.deCHKarsten:
@@ -457,6 +464,8 @@ namespace CognitiveServicesTTS
                     return "Microsoft Server Speech Text to Speech Voice (de-DE, HeddaRUS)";
                 case VoiceName.deDEStefanApollo:
                     return "Microsoft Server Speech Text to Speech Voice (de-DE, Stefan, Apollo)";
+                case VoiceName.deDEKatjaNeural:
+                    return "Microsoft Server Speech Text to Speech Voice (de-DE, KatjaNeural)";
                 case VoiceName.esESHelenaRUS:
                     return "Microsoft Server Speech Text to Speech Voice (es-ES, HelenaRUS)";
                 case VoiceName.esESLauraApollo:
