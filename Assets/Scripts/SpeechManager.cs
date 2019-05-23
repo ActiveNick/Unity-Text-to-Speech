@@ -11,14 +11,19 @@ using Microsoft.Unity;
 #if UNITY_EDITOR || !UNITY_WSA
 using System.Security.Cryptography.X509Certificates;
 #endif
+using Microsoft.CognitiveServices.Speech;
+using Microsoft.CognitiveServices.Speech.Audio;
 
 // IMPORTANT: THIS CODE ONLY WORKS WITH THE .NET 4.6 SCRIPTING RUNTIME
 
 public class SpeechManager : MonoBehaviour {
 
-    [Tooltip("Connection string to Azure Storage account.")]
+    [Tooltip("Cognitive Services Speech API Key")]
     [SecretValue("SpeechService_APIKey")]
     public string SpeechServiceAPIKey = string.Empty;
+    [Tooltip("Cognitive Services Speech Service Region.")]
+    [SecretValue("SpeechService_Region")]
+    public string SpeechServiceRegion = string.Empty;
 
     [Tooltip("The audio source where speech will be played.")]
     public AudioSource audioSource = null;
@@ -74,7 +79,7 @@ public class SpeechManager : MonoBehaviour {
         // FOR MORE INFO ON AUTHENTICATION AND HOW TO GET YOUR API KEY, PLEASE VISIT
         // https://docs.microsoft.com/en-us/azure/cognitive-services/speech/how-to/how-to-authentication
         Authentication auth = new Authentication();
-        Task<string> authenticating = auth.Authenticate("https://westus.api.cognitive.microsoft.com/sts/v1.0/issueToken",
+        Task<string> authenticating = auth.Authenticate($"https://{SpeechServiceRegion}.api.cognitive.microsoft.com/sts/v1.0/issueToken",
                                                  SpeechServiceAPIKey); // INSERT-YOUR-SPEECH-API-KEY-HERE
         // Don't use the key above, it's mine and I reserve the right to invalidate it if/when I want, 
         // use the link above and go get your own. The free tier gives you 5,000 free API transactions / month.
@@ -147,7 +152,7 @@ public class SpeechManager : MonoBehaviour {
                 Debug.Log($"Converting raw WAV data of size {buffer.Length} into Unity audio data.");
                 int sampleCount = 0;
                 int frequency = 0;
-                var unityData = ToUnityAudio(buffer, out sampleCount, out frequency);
+                var unityData = AudioWithHeaderToUnityAudio(buffer, out sampleCount, out frequency);
 
                 // Convert data to a Unity audio clip
                 Debug.Log($"Converting audio data of size {unityData.Length} to Unity audio clip with {sampleCount} samples at frequency {frequency}.");
@@ -196,7 +201,7 @@ public class SpeechManager : MonoBehaviour {
     /// starts audio playback using the assigned audio source.
     /// </summary>
     /// <param name="message"></param>
-    public void Speak(string message)
+    public void SpeakWithRESTAPI(string message)
     {
         try
         {
@@ -204,7 +209,7 @@ public class SpeechManager : MonoBehaviour {
             // Synthesis endpoint for old Bing Speech API: https://speech.platform.bing.com/synthesize
             // For new unified SpeechService API: https://westus.tts.speech.microsoft.com/cognitiveservices/v1
             // Note: new unified SpeechService API synthesis endpoint is per region
-            string requestUri = "https://westus.tts.speech.microsoft.com/cognitiveservices/v1";
+            string requestUri = $"https://{SpeechServiceRegion}.tts.speech.microsoft.com/cognitiveservices/v1";
             Synthesize cortana = new Synthesize();
 
             // Reuse Synthesize object to minimize latency
@@ -347,7 +352,7 @@ public class SpeechManager : MonoBehaviour {
     /// <param name="sampleCount">The number of samples in the audio data.</param>
     /// <param name="frequency">The frequency of the audio data.</param>
     /// <returns>The Unity formatted audio data. </returns>
-    private static float[] ToUnityAudio(byte[] wavAudio, out int sampleCount, out int frequency)
+    private static float[] AudioWithHeaderToUnityAudio(byte[] wavAudio, out int sampleCount, out int frequency)
     {
         // Determine if mono or stereo
         int channelCount = wavAudio[22];  // Speech audio data is always mono but read actual header value for processing
@@ -399,4 +404,104 @@ public class SpeechManager : MonoBehaviour {
 
         return unityData;
     }
+
+    /// <summary>
+    /// Converts raw WAV data into Unity formatted audio data.
+    /// </summary>
+    /// <param name="wavAudio">The raw WAV data.</param>
+    /// <param name="sampleCount">The number of samples in the audio data.</param>
+    /// <param name="frequency">The frequency of the audio data.</param>
+    /// <returns>The Unity formatted audio data. </returns>
+    private static float[] FixedRAWAudioToUnityAudio(byte[] wavAudio, int channelCount, int resolution, out int sampleCount)
+    {
+        // Pos is now positioned to start of actual sound data.
+        int bytesPerSample = resolution / 8; // e.g. 2 bytes per sample (16 bit sound mono)
+        sampleCount = wavAudio.Length / bytesPerSample;
+        if (channelCount == 2) { sampleCount /= 2; }  // 4 bytes per sample (16 bit stereo)
+        Debug.Log($"Audio data contains {sampleCount} samples. Starting conversion");
+
+        // Allocate memory (supporting left channel only)
+        var unityData = new float[sampleCount];
+
+        int pos = 0;
+        try
+        {
+            // Write to double array/s:
+            int i = 0;
+            while (pos < wavAudio.Length)
+            {
+                unityData[i] = BytesToFloat(wavAudio[pos], wavAudio[pos + 1]);
+                pos += 2;
+                if (channelCount == 2)
+                {
+                    pos += 2;
+                }
+                i++;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Error occurred converting audio data to float array of size {wavAudio.Length} at position {pos}.");
+        }
+
+        return unityData;
+    }
+
+    // Speech synthesis to pull audio output stream.
+    public async Task SpeakWithSDKPlugin(string message)
+    {
+        Synthesize cortana = new Synthesize();
+
+        // Creates an instance of a speech config with specified subscription key and service region.
+        // Replace with your own subscription key and service region (e.g., "westus").
+        var config = SpeechConfig.FromSubscription(SpeechServiceAPIKey, SpeechServiceRegion);
+        config.SpeechSynthesisLanguage = cortana.GetVoiceLocale(voiceName);
+        config.SpeechSynthesisVoiceName = cortana.ConvertVoiceNametoString(voiceName);
+
+        // Creates an audio out stream.
+        using (var stream = AudioOutputStream.CreatePullStream())
+        {
+            // Creates a speech synthesizer using audio stream output.
+            using (var streamConfig = AudioConfig.FromStreamOutput(stream))
+            using (var synthesizer = new SpeechSynthesizer(config, streamConfig))
+            {
+                using (var result = await synthesizer.SpeakTextAsync(message))
+                {
+                    if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                    {
+                        var audiodata = result.AudioData; 
+                        Debug.Log($"Speech synthesized for text and the audio was written to output stream.");
+
+                        int sampleCount = 0;
+                        int frequency = 16000;
+                        var unityData = FixedRAWAudioToUnityAudio(audiodata, 1, 16, out sampleCount);
+
+                        // Convert data to a Unity audio clip
+                        Debug.Log($"Converting audio data of size {unityData.Length} to Unity audio clip with {sampleCount} samples at frequency {frequency}.");
+                        var clip = ToClip("Speech", unityData, sampleCount, frequency);
+
+                        // Set the source on the audio clip
+                        audioSource.clip = clip;
+
+                        Debug.Log($"Trigger playback of audio clip on AudioSource.");
+                        // Play audio
+                        audioSource.Play();
+                    }
+                    else if (result.Reason == ResultReason.Canceled)
+                    {
+                        var cancellation = SpeechSynthesisCancellationDetails.FromResult(result);
+                        Debug.Log($"CANCELED: Reason={cancellation.Reason}");
+
+                        if (cancellation.Reason == CancellationReason.Error)
+                        {
+                            Debug.Log($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                            Debug.Log($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                            Debug.Log($"CANCELED: Did you update the subscription info?");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

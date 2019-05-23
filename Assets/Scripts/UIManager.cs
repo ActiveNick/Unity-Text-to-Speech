@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour {
     public SpeechManager speech;
     public InputField input;
     public InputField pitch;
+    public Toggle useSDK;
     public Dropdown voicelist;
 
     private void Start()
@@ -32,7 +33,14 @@ public class UIManager : MonoBehaviour {
             string msg = input.text;
             speech.voiceName = (VoiceName)voicelist.value;
             speech.VoicePitch = int.Parse(pitch.text);
-            speech.Speak(msg);
+            if (useSDK.isOn)
+            {
+                speech.SpeakWithSDKPlugin(msg);
+            }
+            else
+            {
+                speech.SpeakWithRESTAPI(msg);
+            }
         } else
         {
             Debug.Log("SpeechManager is not ready. Wait until authentication has completed.");
