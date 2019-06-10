@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour {
     public InputField pitch;
     public Toggle useSDK;
     public Dropdown voicelist;
-
+    public GameObject shape;
     private void Start()
     {
         pitch.text = "0";
@@ -24,6 +24,12 @@ public class UIManager : MonoBehaviour {
         }
         voicelist.AddOptions(voices);
         voicelist.value = (int)VoiceName.enUSJessaRUS;
+    }
+
+    public void Update()
+    {
+        if (shape != null)
+            shape.transform.Rotate(Vector3.up, 1);
     }
 
     public void SpeechPlayback()
