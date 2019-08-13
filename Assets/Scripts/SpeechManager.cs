@@ -14,10 +14,19 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 
-// IMPORTANT: THIS CODE ONLY WORKS WITH THE .NET 4.6 SCRIPTING RUNTIME
-
+/// <summary>
+/// SpeechManager provides two paths for Speech Synthesis using the 
+/// Cognitive Services Unified Speech service:
+/// 1. REST API (old method)
+/// 2. Official SDK plugin for Unity (recommended)
+/// IMPORTANT: THIS CODE ONLY WORKS WITH THE .NET 4.6 SCRIPTING RUNTIME
+/// </summary>
 public class SpeechManager : MonoBehaviour {
 
+    // FOR MORE INFO ON AUTHENTICATION AND HOW TO GET YOUR API KEY, PLEASE VISIT
+    // https://docs.microsoft.com/en-us/azure/cognitive-services/speech/how-to/how-to-authentication
+    // The free tier gives you 5,000 free API transactions / month.
+    // Set credentials in the Inspector
     [Tooltip("Cognitive Services Speech API Key")]
     [SecretValue("SpeechService_APIKey")]
     public string SpeechServiceAPIKey = string.Empty;
@@ -38,23 +47,6 @@ public class SpeechManager : MonoBehaviour {
     [HideInInspector]
     public bool isReady = false;
 
-#if UNITY_EDITOR || !UNITY_WSA
-    /// <summary>
-    /// This class is required to circumvent a TLS bug in Unity, otherwise Unity will throw
-    /// an error stating the certificate is invalid. This is supposed to be fixed in Unity
-    /// 2018.2. Note that UWP doesn't have this bug, only Mono, hence the conditional code.
-    /// </summary>
-    //private class CustomCertificatePolicy : ICertificatePolicy
-    //{
-    //    public bool CheckValidationResult(ServicePoint sp,
-    //        X509Certificate certificate, WebRequest request, int error)
-    //    {
-    //        // We force Unity to always validate the certificate as "true".
-    //        return true;
-    //    }
-    //}
-#endif
-
     private void Awake()
     {
         // Attempt to load API secrets
@@ -68,21 +60,10 @@ public class SpeechManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-#if UNITY_EDITOR || !UNITY_WSA
-        // Unity will complain that the following statement is deprecated, however it's still working :)
-        //ServicePointManager.CertificatePolicy = new CustomCertificatePolicy();
-
-        // This 'workaround' seems to work for the .NET Storage SDK, but not here. Leaving this for clarity
-        //ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-#endif
-
-        // FOR MORE INFO ON AUTHENTICATION AND HOW TO GET YOUR API KEY, PLEASE VISIT
-        // https://docs.microsoft.com/en-us/azure/cognitive-services/speech/how-to/how-to-authentication
+        // The Authentication code below is only for the REST API version
         Authentication auth = new Authentication();
         Task<string> authenticating = auth.Authenticate($"https://{SpeechServiceRegion}.api.cognitive.microsoft.com/sts/v1.0/issueToken",
-                                                 SpeechServiceAPIKey); // INSERT-YOUR-SPEECH-API-KEY-HERE
-        // Don't use the key above, it's mine and I reserve the right to invalidate it if/when I want, 
-        // use the link above and go get your own. The free tier gives you 5,000 free API transactions / month.
+                                                 SpeechServiceAPIKey);
 
         // Since the authentication process needs to run asynchronously, we run the code in a coroutine to
         // avoid blocking the main Unity thread.
