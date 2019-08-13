@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CognitiveServicesTTS;
 using System;
+using System.Threading.Tasks;
 
 public class UIManager : MonoBehaviour {
 
@@ -32,7 +33,7 @@ public class UIManager : MonoBehaviour {
             shape.transform.Rotate(Vector3.up, 1);
     }
 
-    public void SpeechPlayback()
+    public async void SpeechPlayback()
     {
         if (speech.isReady)
         {
@@ -41,7 +42,7 @@ public class UIManager : MonoBehaviour {
             speech.VoicePitch = int.Parse(pitch.text);
             if (useSDK.isOn)
             {
-                speech.SpeakWithSDKPlugin(msg);
+                await Task.Run(() => speech.SpeakWithSDKPlugin(msg));
             }
             else
             {

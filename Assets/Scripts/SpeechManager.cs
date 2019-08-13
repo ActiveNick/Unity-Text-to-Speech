@@ -44,15 +44,15 @@ public class SpeechManager : MonoBehaviour {
     /// an error stating the certificate is invalid. This is supposed to be fixed in Unity
     /// 2018.2. Note that UWP doesn't have this bug, only Mono, hence the conditional code.
     /// </summary>
-    private class CustomCertificatePolicy : ICertificatePolicy
-    {
-        public bool CheckValidationResult(ServicePoint sp,
-            X509Certificate certificate, WebRequest request, int error)
-        {
-            // We force Unity to always validate the certificate as "true".
-            return true;
-        }
-    }
+    //private class CustomCertificatePolicy : ICertificatePolicy
+    //{
+    //    public bool CheckValidationResult(ServicePoint sp,
+    //        X509Certificate certificate, WebRequest request, int error)
+    //    {
+    //        // We force Unity to always validate the certificate as "true".
+    //        return true;
+    //    }
+    //}
 #endif
 
     private void Awake()
@@ -70,7 +70,7 @@ public class SpeechManager : MonoBehaviour {
     void Start () {
 #if UNITY_EDITOR || !UNITY_WSA
         // Unity will complain that the following statement is deprecated, however it's still working :)
-        ServicePointManager.CertificatePolicy = new CustomCertificatePolicy();
+        //ServicePointManager.CertificatePolicy = new CustomCertificatePolicy();
 
         // This 'workaround' seems to work for the .NET Storage SDK, but not here. Leaving this for clarity
         //ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
@@ -460,15 +460,17 @@ public class SpeechManager : MonoBehaviour {
         config.SpeechSynthesisVoiceName = cortana.ConvertVoiceNametoString(voiceName);
 
         // Creates an audio out stream.
-        var stream = AudioOutputStream.CreatePullStream();
+        //var stream = AudioOutputStream.CreatePullStream();
         // Creates a speech synthesizer using audio stream output.
-        var streamConfig = AudioConfig.FromStreamOutput(stream);
-        synthesizer = new SpeechSynthesizer(config, streamConfig);
+        //var streamConfig = AudioConfig.FromStreamOutput(stream);
+        synthesizer = new SpeechSynthesizer(config, null);
         Task<SpeechSynthesisResult> Speaking = synthesizer.SpeakTextAsync(message);
 
         // We can't await the task without blocking the main Unity thread, so we'll call a coroutine to
         // monitor completion and play audio when it's ready.
-        StartCoroutine(WaitAndPlayRoutineSDK(Speaking));
+        UnityDispatcher.InvokeOnAppThread(() => {
+            StartCoroutine(WaitAndPlayRoutineSDK(Speaking));
+        });        
     }
 
     private IEnumerator WaitAndPlayRoutineSDK(Task<SpeechSynthesisResult> speakTask)
